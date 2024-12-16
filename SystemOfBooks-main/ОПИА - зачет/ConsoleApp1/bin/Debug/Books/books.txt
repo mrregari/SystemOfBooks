@@ -1,1 +1,1 @@
-System.Linq.Enumerable+ListSelectIterator`2[ConsoleApp1.Book,System.String]
+

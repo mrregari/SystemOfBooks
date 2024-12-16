@@ -11,8 +11,9 @@ class Program
         {
             Console.WriteLine("1. Просмотр книг");
             Console.WriteLine("2. Добавить книгу");
-            Console.WriteLine("3. Генерация отчета");
-            Console.WriteLine("4. Выход");
+            Console.WriteLine("3. Выдать книгу");
+            Console.WriteLine("4. Сохранить списки в файлы");
+            Console.WriteLine("5. Выход");
 
             var choice = Console.ReadLine();
 
@@ -22,27 +23,29 @@ class Program
                 librarySystem.ViewBooks();
                 break;
             case "2":
-                    Console.Write("Введите ID книги: ");
-                    int id = int.Parse(Console.ReadLine());
-                    Console.Write("Введите название книги: ");
-                    string title = Console.ReadLine();
-                    Console.Write("Введите автора книги: ");
-                    string author = Console.ReadLine();
-                    Console.Write("Введите жанр книги: ");
-                    string genre = Console.ReadLine();
-                    Console.Write("Введите издателя книги: ");
-                    string publisher = Console.ReadLine();
-                    Console.Write("Введите ISBN книги: ");
-                    string isbn = Console.ReadLine();
-
-                    librarySystem.AddBook(new Book(id, title, author, genre, publisher, isbn));
-                    Console.WriteLine("Книга добавлена.");
-                    librarySystem.LoadBooks();
-                    break;
+                Console.Write("Введите ID книги: ");
+                int id = Convert.ToInt32(Console.ReadLine());
+                Console.Write("Введите название книги: ");
+                string title = Console.ReadLine();
+                Console.Write("Введите автора книги: ");
+                string author = Console.ReadLine();
+                Console.Write("Введите жанр книги: ");
+                string genre = Console.ReadLine();
+                Console.Write("Введите издателя книги: ");
+                string publisher = Console.ReadLine();
+                Console.Write("Введите ISBN книги: ");
+                string isbn = Console.ReadLine();
+                librarySystem.AddBook(new Book(id, title, author, genre, publisher, isbn));
+                Console.WriteLine("Книга добавлена.");
+                librarySystem.LoadBooks();
+                break;
             case "3":
-                // Код для генерации отчета
+                librarySystem.AddLoanRecord();
                 break;
             case "4":
+                librarySystem.AddTextFiles();
+                break;
+            case "5":
                 return;
             default:
                 Console.WriteLine("Неверный выбор. Попробуйте снова.");
@@ -77,19 +80,21 @@ public class Book
 
 public class Reader
 {
-    public int Id { get; }
+    public int Id { get; set; }
     public string FullName { get; set; }
-    public int Age { get; set; }
     public string PhoneNumber { get; set; }
     public string Email { get; set; }
 
-    public Reader(int id, string fullName, int age, string phoneNumber, string email)
+    public Reader(int id, string fullName, string phoneNumber, string email)
     {
         Id = id;
         FullName = fullName;
-        Age = age;
         PhoneNumber = phoneNumber;
         Email = email;
+    }
+    public override string ToString()
+    {
+        return $"{Id}#{FullName}#{PhoneNumber}#{Email}";
     }
 }
 
@@ -113,6 +118,29 @@ public class LoanRecord
     }
 }
 
+public class Employee
+{
+    public int Id { get; }
+    public string FullName { get; set; }
+    public string PhoneNumber { get; set; }
+    public string Email { get; set; }
+    public string Position { get; set; }
+
+    public Employee(int id, string fullName, string phoneNumber, string email, string position)
+    {
+        Id = id;
+        FullName = fullName;
+        PhoneNumber = phoneNumber;
+        Email = email;
+        Position = position;
+    }
+
+    public override string ToString()
+    {
+        return $"{Id}#{FullName}#{PhoneNumber}#{Email}#{Position}";
+    }
+}
+
 public class LibrarySystem
 {
     private List<Book> books = new List<Book>();
@@ -132,7 +160,7 @@ public class LibrarySystem
                     var parts = line.Split('#');
                     if (parts.Length == 6) // Убедитесь, что у нас есть все части
                     {
-                        int id = int.Parse(parts[0]);
+                        int id = Convert.ToInt16(parts[0]);
                         string title = parts[1];
                         string author = parts[2];
                         string genre = parts[3];
@@ -170,42 +198,131 @@ public class LibrarySystem
         }
     }
 
-    public void SaveBooks()
-    {
-        var lines = ($"{books.Id}#{b.Title}#{b.Author}#{b.Genre}#{b.Publisher}#{b.ISBN}");
-        using(StreamWriter bookwriter = new StreamWriter(@"..\Books\books.txt")){
-            bookwriter.WriteLine(lines);
-        }
-    }
-    
-    public void SaveReaders()
-    {
-        var lines = readers.Select(r => $"{r.Id}#{r.FullName}#{r.Age}#{r.PhoneNumber}#{r.Email}");
-        File.WriteAllLines(@"Readers\readers.txt", lines);
-    }
-   
-    public void SaveLoanRecords()
-    {
-        var lines = loanRecords.Select(l => $"{l.ReaderId}#{l.BookId}#{l.ISBN}#{l.EmployeeId}#{l.IsReturn}#{l.Date}");
-        File.WriteAllLines(@"mrregari/SystemOfBooks/LoanRecords/loanrecords.txt", lines);
-    }
         
     public void AddBook(Book book)
     {
         books.Add(book);
-        SaveBooks();
     }
     
     public void AddReader(Reader reader)
     {
         readers.Add(reader);
-        SaveReaders();
     }
 
-    public void AddLoanRecord(LoanRecord loanRecord)
+    public void AddLoanRecord()
     {
-        loanRecords.Add(loanRecord);
-        SaveLoanRecords();
+        Console.Write("Введите ID читателя: ");
+        var readerId = Convert.ToInt32(Console.ReadLine());
+        if (readers.Contains(new Reader {Id = readerId, FullName = "", PhoneNumber = "", Email = ""}))
+        Console.Write("Введите название книги: ");
+        int bookId = Convert.ToInt32(Console.ReadLine());
+        Console.Write("Введите автора книги: ");
+        string employeeId = Console.ReadLine();
+        loanRecords.Add();
     }
+
+
+
+    public void AddTextFiles(){
+        var booklines = books.Select(b => $"{b.Id}#{b.Title}#{b.Author}#{b.Genre}#{b.Publisher}#{b.ISBN}").ToList();
+        using(StreamWriter bookwriter = new StreamWriter(@"..\Books\books.txt")){
+            foreach (var line in booklines)
+            {
+                bookwriter.WriteLine(line);        
+            }
+        }
+        var readerlines = loanRecords.Select(l => $"{l.ReaderId}#{l.BookId}#{l.ISBN}#{l.EmployeeId}#{l.IsReturn}#{l.Date}");
+        using(StreamWriter bookwriter = new StreamWriter(@"..\LoanRecords\loanrecords.txt")){
+            foreach (var line in readerlines)
+            {
+                bookwriter.WriteLine(line);        
+            }
+        }
+                var lines = readers.Select(r => $"{r.Id}#{r.FullName}#{r.PhoneNumber}#{r.Email}");
+        using(StreamWriter bookwriter = new StreamWriter(@"..\Readers\readers.txt")){
+            foreach (var line in lines)
+            {
+                bookwriter.WriteLine(line);        
+            }
+        }
+    } 
+}
+public class AccountManager
+{
+    private List<Reader> readers = new List<Reader>();
+    private List<Employee> employees = new List<Employee>();
+
+    public void LoadReaders(string filePath)
+    {
+        foreach (var line in File.ReadLines(filePath))
+        {
+            var parts = line.Split('#');
+            readers.Add(new Reader(Convert.ToInt16(parts[0]), parts[1], parts[2], parts[3]));
+        }
+    }
+
+    public void LoadEmployees(string filePath)
+    {
+        foreach (var line in File.ReadLines(filePath))
+        {
+            var parts = line.Split('#');
+            employees.Add(new Employee(Convert.ToInt16(parts[0]), parts[1], parts[2], parts[3], parts[4]));
+        }
+    }
+
+    public void SaveReaders(string filePath)
+    {
+        using (StreamWriter writer = new StreamWriter(filePath, true))
+        {
+            foreach (var reader in readers)
+            {
+                writer.WriteLine(reader);
+            }
+        }
+    }
+
+    public void SaveEmployees(string filePath)
+    {
+        using (StreamWriter writer = new StreamWriter(filePath, true))
+        {
+            foreach (var employee in employees)
+            {
+                writer.WriteLine(employee);
+            }
+        }
+    }
+
+    public void AddReader(Reader reader)
+    {
+        readers.Add(reader);
+        SaveReaders(@"..\Readers\readers.txt");
+    }
+
+    public void AddEmployee(Employee employee)
+    {
+        employees.Add(employee);
+        SaveEmployees(@"..\Employees\employees.txt");
+    }
+
+    public void DeleteReader(int id)
+    {
+        var reader = readers.FirstOrDefault(r => r.Id == id);
+        if (reader != null)
+        {
+            readers.Remove(reader);
+            SaveReaders(@"..\Readers\readers.txt");
+        }
+    }
+
+    public void DeleteEmployee(int id)
+    {
+        var employee = employees.FirstOrDefault(e => e.Id == id);
+        if (employee != null)
+        {
+            employees.Remove(employee);
+            SaveEmployees(@"..\Employees\employees.txt");
+        }
+    }
+
 
 }
