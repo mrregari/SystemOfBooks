@@ -22,7 +22,7 @@ public class Book
     }
     public override string ToString()
     {
-        return $"ID: {Id}, Title: {Title}, Author: {Author}, Genre: {Genre}, Publisher: {Publisher}, ISBN: {ISBN}";
+        return $"ID: {Id}, Title: {Title}, Author: {Author}, Genre: {Genre}, Publisher: {Publisher}, ISBN: {ISBN} Reting: {Gived}";
     }
 }
 public class Reader
@@ -73,6 +73,45 @@ public class LibrarySystem
     private List<Book> books = new List<Book>();
     private List<Reader> readers = new List<Reader>();
     private List<LoanRecord> loanRecords = new List<LoanRecord>();
+
+    public void GeneringReport()
+    {
+        FileInfo books = new FileInfo(@"..\Books\books.txt");
+        List<Book> givedsId = new List<Book>();
+        int maxValue = givedsId.Min(g => g.Gived);
+        int maxId = 0;
+        string maxTitle = " ";
+        using(StreamReader reader = new StreamReader(@"..\Books\books.txt"))
+        {
+            string line;
+            while ((line = reader.ReadLine()) != null)
+            {
+                var parts = line.Split('#');
+                if (parts.Length == 7)
+                {
+                    int id = Convert.ToInt16(parts[0]);
+                    string title = parts[1];
+                    string author = parts[2];
+                    string genre = parts[3];
+                    string publisher = parts[4];
+                    string isbn = parts[5];
+                    int gived = Convert.ToInt16(parts[6]);
+                    givedsId.Add(new Book(id, title, author, genre, publisher, isbn, gived));
+                }
+            }
+            foreach (var giveded in givedsId)
+            {
+                if(giveded.Id > maxValue)
+                {
+                    maxValue = giveded.Gived;
+                    maxId = giveded.Id;
+                    maxTitle = giveded.Title;
+                }
+            }
+            Console.WriteLine($"Отчет по популярности книг: Самая популярная книга — {maxTitle}, {maxId} с выдачами {maxValue}");
+        }
+    }
+
     public void LoadBooks()
     {
         if (File.Exists(@"..\Books\books.txt"))
@@ -119,13 +158,14 @@ public class LibrarySystem
     public void ViewStats()
     {
         System.Console.WriteLine("Генерация отчетов: ");
-        System.Console.WriteLine("1. Самая популярная / непопулярная книга");
+        System.Console.WriteLine("1. Самая популярная книга");
         System.Console.WriteLine("2. Рейтинг сотрудников");
         System.Console.WriteLine("Для выхода напишите любое другое значение");
         int choise = Convert.ToInt16(Console.ReadLine());
         switch(choise)
         {
             case 1:
+                GeneringReport();
                 break;
             case 2:
                 break;
@@ -161,7 +201,6 @@ public class LibrarySystem
 
     public void AddLoanRecord(LoanRecord loanRecord)
     {
-        books[7].Gived++;
         loanRecords.Add(loanRecord);
     }
 
@@ -210,6 +249,8 @@ public class LibrarySystem
                 Console.WriteLine("Введите ID сотрудника: ");
                 int employeeId = Convert.ToInt16(Console.ReadLine());
                 bool isReturn = false;
+                Book GivedToUpdate = books.Find(b => b.Id == bookId);
+                GivedToUpdate.Gived += 1;
                 AddLoanRecord(new LoanRecord(readerId, bookId, bookIsbn, isReturn, employeeId));
                 break;
             case "4":

@@ -16,7 +16,7 @@ class Program
             int choise = Convert.ToInt16(Console.ReadLine());
             switch(choise){
                 case 1:
-                    
+                    librarySystem.ViewStats();
                     break;
                 case 2:
                     librarySystem.LibMenu();

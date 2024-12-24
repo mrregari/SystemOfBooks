@@ -8,19 +8,24 @@
     "net9.0": []
   },
   "packageFolders": {
-    "C:\\Users\\studkab8\\.nuget\\packages\\": {}
+    "C:\\Users\\studkab8\\.nuget\\packages\\": {},
+    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\studkab8\\Downloads\\SystemOfBooks-main\\SystemOfBooks-main\\SystemOfBooks-main\\ОПИА - зачет\\ConsoleApp1\\ConsoleApp1.csproj",
+      "projectUniqueName": "C:\\Users\\studkab8\\Downloads\\SystemOfBooks-main\\ОПИА - зачет\\ConsoleApp1\\ConsoleApp1.csproj",
       "projectName": "ConsoleApp1",
-      "projectPath": "C:\\Users\\studkab8\\Downloads\\SystemOfBooks-main\\SystemOfBooks-main\\SystemOfBooks-main\\ОПИА - зачет\\ConsoleApp1\\ConsoleApp1.csproj",
+      "projectPath": "C:\\Users\\studkab8\\Downloads\\SystemOfBooks-main\\ОПИА - зачет\\ConsoleApp1\\ConsoleApp1.csproj",
       "packagesPath": "C:\\Users\\studkab8\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\studkab8\\Downloads\\SystemOfBooks-main\\SystemOfBooks-main\\SystemOfBooks-main\\ОПИА - зачет\\ConsoleApp1\\obj\\",
+      "outputPath": "C:\\Users\\studkab8\\Downloads\\SystemOfBooks-main\\ОПИА - зачет\\ConsoleApp1\\obj\\",
       "projectStyle": "PackageReference",
+      "fallbackFolders": [
+        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+      ],
       "configFilePaths": [
         "C:\\Users\\studkab8\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
