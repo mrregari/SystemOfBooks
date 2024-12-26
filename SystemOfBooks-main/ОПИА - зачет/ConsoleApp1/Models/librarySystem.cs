@@ -3,12 +3,13 @@ using System.Security.Cryptography.X509Certificates;
 
 public class LibrarySystem
 {
-    public List<Book> books = new List<Book>();
-    public List<Reader> readers = new List<Reader>();
-    public List<LoanRecord> loanRecords = new List<LoanRecord>();
+
+    AccountManager accountManager = new AccountManager();
+    Lists lists = new Lists();
+
     public void GeneringReport()
     {
-        Book maxItem = books.OrderByDescending(item => item.Gived).FirstOrDefault();
+        Book maxItem = lists.books.OrderByDescending(item => item.Gived).FirstOrDefault();
         if (maxItem != null)
         {
             Console.WriteLine($"\nСамая популярная книга: [{maxItem.Title}] с {maxItem.Gived} выдачами");
@@ -19,7 +20,7 @@ public class LibrarySystem
         }
     }
 
-    public void LoadBooks()
+    public void LoadBooks() // Подгрузка в списки всего и вся из файлов
     {
         if (File.Exists(@"..\Books\books.txt"))
         {
@@ -41,7 +42,7 @@ public class LibrarySystem
                         string isbn = parts[5];
                         int gived = Convert.ToInt16(parts[6]);
 
-                        books.Add(new Book(id, title, author, genre, publisher, isbn, gived));
+                        lists.books.Add(new Book(id, title, author, genre, publisher, isbn, gived));
                     }
                 }
             }
@@ -52,13 +53,13 @@ public class LibrarySystem
         }
         }
         if (File.Exists(@"..\LoanRecords\loanrecords.txt")){
-            try{
+            {
                 using(StreamReader loanReader = new StreamReader(@"..\LoanRecords\loanrecords.txt")){
                     string line;
                     while ((line = loanReader.ReadLine()) != null)
                     {
                         var parts = line.Split('#');
-                        if (parts.Length == 7)
+                        if (parts.Length == 5)
                         {
                             int readerId = Convert.ToInt16(parts[0]);
                             int bookId = Convert.ToInt16(parts[1]);
@@ -66,22 +67,39 @@ public class LibrarySystem
                             bool isReturn = Convert.ToBoolean(parts[3]);
                             DateTime Date = Convert.ToDateTime(parts[4]);
 
-                            loanRecords.Add(new LoanRecord(readerId, bookId, isReturn, employeeId, Date));
+                            lists.loanRecords.Add(new LoanRecord(readerId, bookId, isReturn, employeeId, Date));
                         }
                     }
                 }
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Ошибка: {ex.Message}");
+
+        }
+        if (File.Exists(@"..\Readers\readers.txt")){
+        {
+            using(StreamReader readReader = new StreamReader(@"..\Readers\readers.txt")){
+                string line;
+                while ((line = readReader.ReadLine()) != null)
+                {
+                    var parts = line.Split('#');
+                    if (parts.Length == 4)
+                    {
+                        int id = Convert.ToInt16(parts[0]);
+                        string fullName = parts[1];
+                        string phoneNumber = parts[2];
+                        string email = parts[3];
+
+                        lists.readers.Add(new Reader(id, fullName, phoneNumber, email));
+                    }
+                }
             }
         }
 
     }
+}
 
 
 
-    public void ViewStats()
+    public void ViewStats() // меню отчетов
     {
         System.Console.WriteLine("Генерация отчетов: ");
         System.Console.WriteLine("1. Самая популярная книга");
@@ -94,42 +112,57 @@ public class LibrarySystem
                 GeneringReport();
                 break;
             case 2:
+                GeneringReportEmpl();
                 break;
             default:
                 break;
         }
     }
 
-    public void ViewBooks()
+    public void GeneringReportEmpl(){
+        Employee maxItem = lists.employees.OrderByDescending(item => item.GivedBooks).FirstOrDefault();
+        if (maxItem != null)
+        {
+            Console.WriteLine($"\nСамый работающий сотрудник: [{maxItem.FullName}] с {maxItem.GivedBooks} выдачами");
+        }
+        else
+        {
+            Console.WriteLine("Список пуст.");
+        }
+    }
+
+    public void ViewBooks() // просмотр книг
     {
         FileInfo filebook = new FileInfo(@"..\Books\books.txt");
         Console.WriteLine("Список книг: \n");
-        foreach(var book in books){
+        foreach(var book in lists.books){
             Console.WriteLine(book); 
         }
 
         LibMenu();
     }
 
-        
+        // нада
     public void AddBook(Book book)
     {
-        books.Add(book);
+        lists.books.Add(book);
+        AddTextFilesBooks();
     }
     
     public void AddReader(Reader reader)
     {
-        readers.Add(reader);
+        lists.readers.Add(reader);
+        AddTextFilesReader();
     }
 
     public void AddLoanRecord(LoanRecord loanRecord)
     {
-        loanRecords.Add(loanRecord);
-        AddTextFiles();
+        lists.loanRecords.Add(loanRecord);
+        AddTextFilesLoan();
     }
 
     
-    public void LibMenu()
+    public void LibMenu() // меню справочника
 {
     while (true)
     {
@@ -156,7 +189,7 @@ public class LibrarySystem
                 }
 
 
-                int id = books?.Any() == true ? books.Max(b => b.Id) + 1 : 1;
+                int id = lists.books?.Any() == true ? lists.books.Max(b => b.Id) + 1 : 1;
 
                 Console.Write("Введите название книги: ");
                 string title = FirstLetter(Console.ReadLine());
@@ -169,7 +202,7 @@ public class LibrarySystem
                 Console.Write("Введите ISBN книги: ");
                 string isbn = Console.ReadLine();
                 int gived = 0;
-                if (books.Any(b => b.ISBN == isbn))
+                if (lists.books.Any(b => b.ISBN == isbn))
                 {
                     Console.WriteLine("Ошибка: книга с таким ISBN уже существует.");
                 }
@@ -178,7 +211,7 @@ public class LibrarySystem
                     AddBook(new Book(id, title, author, genre, publisher, isbn, gived));
                     Console.WriteLine("Книга добавлена.");
                     LoadBooks();
-                    AddTextFiles();
+                    AddTextFilesBooks();
                 }
                 break;
 
@@ -204,13 +237,20 @@ public class LibrarySystem
                     break;
                 }
 
-                Book bookToUpdate = books.Find(b => b.Id == bookId);
+                Book bookToUpdate = lists.books.Find(b => b.Id == bookId);
+                Employee employeeToUpdate = lists.employees.Find(e => e.Id == employeeId);
                 if (bookToUpdate != null)
                 {
-                    bookToUpdate.Gived += 1;
-                    AddLoanRecord(new LoanRecord(readerId, bookId, false, employeeId, DateTime.Now));
-                    Console.WriteLine("Книга выдана.");
-                    AddTextFiles();
+                    if (employeeToUpdate != null)
+                    {
+                        employeeToUpdate.GivedBooks++;
+                        bookToUpdate.Gived++;
+                        AddLoanRecord(new LoanRecord(readerId, bookId, false, employeeId, DateTime.Now));
+                        Console.WriteLine("Книга выдана.");
+                        AddTextFilesBooks();
+                        AddTextFilesLoan();
+                        accountManager.SaveEmployees(@"../Employees/employees.txt");
+                    }
                 }
                 else
                 {
@@ -220,7 +260,7 @@ public class LibrarySystem
 
             case "4":
                 System.Console.WriteLine("Записи о выдаче: ");
-                foreach (var item in loanRecords)
+                foreach (var item in lists.loanRecords)
                 {
                     System.Console.WriteLine(item);
                 }
@@ -251,33 +291,42 @@ public class LibrarySystem
 }
     private bool RemoveLoanRecord(int loanRecordId)
     {
-        var loanRecordToRemove = loanRecords.Find(lr => lr.BookId == loanRecordId); 
-        if (loanRecordToRemove != null)
-        {
-            loanRecords.Remove(loanRecordToRemove);
+        var loanRecordToRemove = lists.loanRecords.Find(lr => lr.BookId == loanRecordId); 
+        if (loanRecordToRemove != null){
+
+            loanRecordToRemove.IsReturn = true;
+            AddTextFilesLoan();
             return true;
         }
         return false;
     }
 
 
-    public void AddTextFiles(){
-        var booklines = books.Select(b => $"{b.Id}#{b.Title}#{b.Author}#{b.Genre}#{b.Publisher}#{b.ISBN}#{b.Gived}").ToList();
-        using(StreamWriter bookwriter = new StreamWriter(@"..\Books\books.txt", true)){
+
+
+
+                    // загрузка данных из списков в файлы
+    public void AddTextFilesBooks(){
+        var booklines = lists.books.Select(b => $"{b.Id}#{b.Title}#{b.Author}#{b.Genre}#{b.Publisher}#{b.ISBN}#{b.Gived}").ToList();
+        using(StreamWriter bookwriter = new StreamWriter(@"..\Books\books.txt", false)){
             foreach (var line in booklines)
             {
                 bookwriter.WriteLine(line);        
             }
         }
-        var readerlines = loanRecords.Select(l => $"{l.ReaderId}#{l.BookId}#{l.EmployeeId}#{l.IsReturn}#{l.Date}");
-        using(StreamWriter loanwriter = new StreamWriter(@"..\LoanRecords\loanrecords.txt", true)){
+    }
+    public void AddTextFilesLoan(){
+        var readerlines = lists.loanRecords.Select(l => $"{l.ReaderId}#{l.BookId}#{l.EmployeeId}#{l.IsReturn}#{l.Date}").ToList();
+        using(StreamWriter loanwriter = new StreamWriter(@"..\LoanRecords\loanrecords.txt", false)){
             foreach (var line in readerlines)
             {
                 loanwriter.WriteLine(line);        
             }
         }
-        var lines = readers.Select(r => $"{r.Id}#{r.FullName}#{r.PhoneNumber}#{r.Email}");
-        using(StreamWriter readwriter = new StreamWriter(@"..\Readers\readers.txt", true)){
+    }
+    public void AddTextFilesReader(){
+        var lines = lists.readers.Select(r => $"{r.Id}#{r.FullName}#{r.PhoneNumber}#{r.Email}").ToList();
+        using(StreamWriter readwriter = new StreamWriter(@"..\Readers\readers.txt", false)){
             foreach (var line in lines)
             {
                 readwriter.WriteLine(line);        
@@ -285,6 +334,10 @@ public class LibrarySystem
         }
     LibMenu();
     }
+
+
+        // ЗаГлАвНыЕ БуКвЫ!!!
+
     public string FirstLetter(string author){
         if (string.IsNullOrEmpty(author)){
             return author;

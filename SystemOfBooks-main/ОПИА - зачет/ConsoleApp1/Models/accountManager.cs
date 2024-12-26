@@ -1,14 +1,16 @@
 
+using System.ComponentModel.Design;
+
 public class AccountManager
 {
-    LibrarySystem librarySystem = new LibrarySystem();
-    public List<Employee> employees = new List<Employee>();
 
-    public void AccountManagerMenu()
+    Lists lists = new Lists();
+    public void AccountManagerMenu()  // Менюшка
     {
         Console.WriteLine("1. Добавить читателя");
         Console.WriteLine("2. Создать сотрудника");
-        Console.WriteLine("3. Выход");
+        Console.WriteLine("3. Посмотреть список читателей");
+        Console.WriteLine("4. Выход");
 
         var choice = Console.ReadLine();
 
@@ -21,6 +23,9 @@ public class AccountManager
                 CreateEmployee();
                 break;
             case "3":
+                CheckAllReaders();
+                break;
+            case "4":
                 Console.WriteLine("Выход из программы...");
                 return;
             default:
@@ -34,7 +39,7 @@ public class AccountManager
         foreach (var line in File.ReadLines(filePath))
         {
             var parts = line.Split('#');
-            librarySystem.readers.Add(new Reader(Convert.ToInt16(parts[0]), parts[1], parts[2], parts[3]));
+            lists.readers.Add(new Reader(Convert.ToInt16(parts[0]), parts[1], parts[2], parts[3]));
         }
     }
 
@@ -43,25 +48,32 @@ public class AccountManager
         foreach (var line in File.ReadLines(filePath))
         {
             var parts = line.Split('#');
-            employees.Add(new Employee(Convert.ToInt16(parts[0]), parts[1], parts[2], parts[3], parts[4], Convert.ToInt16(parts[5])));
+            lists.employees.Add(new Employee(Convert.ToInt16(parts[0]), parts[1], parts[2], parts[3], parts[4], Convert.ToInt16(parts[5])));
         }
     }
 
     public void SaveReaders(string filePath)
     {
-        using (StreamWriter writer = new StreamWriter(filePath, true))
+        using (StreamWriter writer = new StreamWriter(filePath, false))
         {
-            foreach (var reader in librarySystem.readers)
+            foreach (var reader in lists.readers)
             {
                 writer.WriteLine(reader);
             }
         }
     }
 
+    public void CheckAllReaders(){
+        System.Console.WriteLine("Список всех читателей: \n");
+        foreach(var item in lists.readers){
+            System.Console.WriteLine(item);
+        }
+    }
+
     public void SaveEmployees(string filePath)
     {
-        var lines = employees.Select(r => $"{r.Id}#{r.FullName}#{r.PhoneNumber}#{r.Email}#{r.Position}#{r.GivedBooks}");
-        using (StreamWriter writer = new StreamWriter(filePath, true))
+        var lines = lists.employees.Select(r => $"{r.Id}#{r.FullName}#{r.PhoneNumber}#{r.Email}#{r.Position}#{r.GivedBooks}");
+        using (StreamWriter writer = new StreamWriter(filePath, false))
         {
             foreach (var employee in lines)
             {
@@ -72,19 +84,19 @@ public class AccountManager
 
     public void AddReader(Reader reader)
     {
-        librarySystem.readers.Add(reader);
+        lists.readers.Add(reader);
         SaveReaders(@"..\Readers\readers.txt");
     }
 
     public void AddEmployee(Employee employee)
     {
-        employees.Add(employee);
+        lists.employees.Add(employee);
         SaveEmployees(@"..\Employees\employees.txt");
     }
 
 public void CreateReader()
     {
-        int id = librarySystem.readers?.Any() == true ? librarySystem.readers.Max(r => r.Id) + 1 : 1;
+        int id = lists.readers?.Any() == true ? lists.readers.Max(r => r.Id) + 1 : 1;
 
         Console.Write("Введите ФИО читателя: ");
         string fullName = Console.ReadLine();
@@ -103,7 +115,7 @@ public void CreateReader()
 
     public void CreateEmployee()
     {
-        int id = employees?.Any() == true ? employees.Max(r => r.Id) + 1 : 1;
+        int id = lists.employees?.Any() == true ? lists.employees.Max(r => r.Id) + 1 : 1;
 
         Console.Write("Введите ФИО сотрудника: ");
         string fullName = Console.ReadLine();
